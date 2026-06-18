@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>worknames</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body data-active="blue">
+    <!-- Bandeau d'erreur de données (caché par défaut) -->
+    <div id="errorBanner" class="error-banner" hidden role="alert">
+      <h2 id="errorTitle"></h2>
+      <p id="errorMessage"></p>
+      <p class="error-hint" id="errorHint"></p>
+    </div>
+
+    <div id="app" class="app" hidden>
+      <header class="topbar">
+        <div class="brand">
+          <h1 class="brand-title" id="appTitle">worknames</h1>
+          <p class="brand-tagline" id="appTagline"></p>
+        </div>
+
+        <div class="turn-indicator" id="turnIndicator" aria-live="polite">
+          <span class="turn-dot" aria-hidden="true"></span>
+          <span class="turn-text" id="turnText"></span>
+        </div>
+
+        <div class="key-badge" id="keyBadge" title="">
+          <span id="keyLabel"></span>
+        </div>
+      </header>
+
+      <section class="clue-bar" id="clueBar">
+        <span class="clue-tag" id="clueTag"></span>
+        <input
+          type="text"
+          id="clueWord"
+          class="clue-word"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <input
+          type="text"
+          id="clueNumber"
+          class="clue-number"
+          inputmode="numeric"
+          autocomplete="off"
+        />
+      </section>
+
+      <main class="board-wrap">
+        <div class="board" id="board" role="grid"></div>
+      </main>
+
+      <footer class="controls">
+        <div class="scores">
+          <div class="score score-blue" id="scoreBlue">
+            <span class="score-team" id="scoreBlueLabel"></span>
+            <span class="score-value" id="scoreBlueValue"></span>
+          </div>
+          <div class="score score-red" id="scoreRed">
+            <span class="score-team" id="scoreRedLabel"></span>
+            <span class="score-value" id="scoreRedValue"></span>
+          </div>
+        </div>
+
+        <div class="timer" id="timer" hidden>
+          <span class="timer-value" id="timerValue">00:00</span>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="endTurnBtn"></button>
+          <button type="button" class="btn" id="timerBtn"></button>
+          <button type="button" class="btn btn-ghost" id="invalidClueBtn"></button>
+          <button type="button" class="btn" id="settingsBtn"></button>
+          <button type="button" class="btn btn-danger" id="replayBtn"></button>
+          <a class="btn btn-link" id="printKeysLink" href="./keys.html" target="_blank" rel="noopener"></a>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Bannière de fin de partie -->
+    <div id="endBanner" class="end-banner" hidden role="alert">
+      <div class="end-card">
+        <p class="end-title" id="endTitle"></p>
+        <p class="end-cause" id="endCause"></p>
+        <button type="button" class="btn btn-primary btn-large" id="endReplayBtn"></button>
+      </div>
+    </div>
+
+    <!-- Réglages -->
+    <dialog id="settingsDialog" class="settings-dialog">
+      <form method="dialog" class="settings-form" id="settingsForm">
+        <h2 id="settingsTitle"></h2>
+
+        <label class="field">
+          <span id="settingTimerLabel"></span>
+          <input type="number" id="settingTimer" min="5" max="3600" step="5" />
+        </label>
+
+        <label class="field field-row">
+          <input type="checkbox" id="settingSound" />
+          <span id="settingSoundLabel"></span>
+        </label>
+
+        <fieldset class="field">
+          <legend id="settingKeyModeLabel"></legend>
+          <label class="radio">
+            <input type="radio" name="keyMode" value="random" id="keyModeRandom" />
+            <span id="keyModeRandomLabel"></span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="keyMode" value="manual" id="keyModeManual" />
+            <span id="keyModeManualLabel"></span>
+          </label>
+        </fieldset>
+
+        <label class="field" id="manualKeyField">
+          <span id="settingManualKeyLabel"></span>
+          <input type="number" id="settingManualKey" min="1" step="1" />
+        </label>
+
+        <div class="settings-actions">
+          <button type="submit" class="btn btn-primary" id="settingsApply"></button>
+          <button type="button" class="btn btn-ghost" id="settingsClose"></button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

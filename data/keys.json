@@ -1,0 +1,332 @@
+[
+  {
+    "id": 1,
+    "start": "blue",
+    "grid": [
+      "blue", "blue", "red", "neutral", "red",
+      "neutral", "red", "neutral", "neutral", "red",
+      "assassin", "neutral", "neutral", "red", "blue",
+      "neutral", "blue", "red", "blue", "blue",
+      "blue", "red", "red", "blue", "blue"
+    ]
+  },
+  {
+    "id": 2,
+    "start": "red",
+    "grid": [
+      "neutral", "neutral", "blue", "neutral", "neutral",
+      "blue", "blue", "neutral", "blue", "neutral",
+      "red", "red", "red", "assassin", "red",
+      "red", "neutral", "blue", "red", "blue",
+      "blue", "red", "red", "blue", "red"
+    ]
+  },
+  {
+    "id": 3,
+    "start": "blue",
+    "grid": [
+      "red", "red", "red", "neutral", "blue",
+      "neutral", "blue", "blue", "blue", "red",
+      "blue", "red", "red", "blue", "red",
+      "red", "neutral", "neutral", "blue", "neutral",
+      "assassin", "neutral", "neutral", "blue", "blue"
+    ]
+  },
+  {
+    "id": 4,
+    "start": "red",
+    "grid": [
+      "red", "blue", "neutral", "blue", "neutral",
+      "assassin", "red", "red", "red", "blue",
+      "neutral", "red", "neutral", "red", "neutral",
+      "red", "red", "blue", "red", "neutral",
+      "blue", "blue", "blue", "blue", "neutral"
+    ]
+  },
+  {
+    "id": 5,
+    "start": "blue",
+    "grid": [
+      "neutral", "blue", "blue", "blue", "red",
+      "neutral", "red", "neutral", "assassin", "blue",
+      "red", "red", "neutral", "blue", "red",
+      "blue", "red", "blue", "red", "blue",
+      "blue", "neutral", "neutral", "neutral", "red"
+    ]
+  },
+  {
+    "id": 6,
+    "start": "red",
+    "grid": [
+      "red", "blue", "red", "red", "assassin",
+      "neutral", "blue", "neutral", "red", "blue",
+      "red", "red", "blue", "neutral", "red",
+      "neutral", "neutral", "blue", "neutral", "blue",
+      "red", "blue", "red", "blue", "neutral"
+    ]
+  },
+  {
+    "id": 7,
+    "start": "blue",
+    "grid": [
+      "neutral", "neutral", "blue", "neutral", "assassin",
+      "red", "neutral", "red", "red", "neutral",
+      "red", "blue", "neutral", "red", "blue",
+      "red", "blue", "neutral", "red", "blue",
+      "blue", "blue", "blue", "red", "blue"
+    ]
+  },
+  {
+    "id": 8,
+    "start": "red",
+    "grid": [
+      "assassin", "neutral", "blue", "blue", "red",
+      "neutral", "blue", "red", "blue", "blue",
+      "blue", "red", "blue", "neutral", "neutral",
+      "red", "red", "neutral", "blue", "red",
+      "red", "neutral", "red", "red", "neutral"
+    ]
+  },
+  {
+    "id": 9,
+    "start": "blue",
+    "grid": [
+      "red", "blue", "red", "blue", "blue",
+      "neutral", "blue", "red", "red", "red",
+      "blue", "neutral", "assassin", "neutral", "blue",
+      "blue", "blue", "neutral", "neutral", "neutral",
+      "red", "red", "neutral", "red", "blue"
+    ]
+  },
+  {
+    "id": 10,
+    "start": "red",
+    "grid": [
+      "blue", "blue", "neutral", "assassin", "red",
+      "blue", "neutral", "blue", "neutral", "red",
+      "red", "neutral", "red", "blue", "blue",
+      "neutral", "red", "blue", "red", "red",
+      "neutral", "red", "neutral", "blue", "red"
+    ]
+  },
+  {
+    "id": 11,
+    "start": "blue",
+    "grid": [
+      "red", "neutral", "neutral", "neutral", "blue",
+      "red", "neutral", "red", "neutral", "blue",
+      "blue", "neutral", "blue", "blue", "blue",
+      "red", "blue", "red", "blue", "neutral",
+      "blue", "red", "assassin", "red", "red"
+    ]
+  },
+  {
+    "id": 12,
+    "start": "red",
+    "grid": [
+      "blue", "blue", "blue", "red", "neutral",
+      "blue", "neutral", "red", "blue", "neutral",
+      "red", "red", "red", "neutral", "blue",
+      "red", "blue", "neutral", "neutral", "blue",
+      "neutral", "red", "red", "red", "assassin"
+    ]
+  },
+  {
+    "id": 13,
+    "start": "blue",
+    "grid": [
+      "red", "blue", "blue", "blue", "blue",
+      "neutral", "red", "red", "red", "blue",
+      "neutral", "red", "blue", "neutral", "neutral",
+      "blue", "blue", "red", "red", "assassin",
+      "neutral", "red", "neutral", "neutral", "blue"
+    ]
+  },
+  {
+    "id": 14,
+    "start": "red",
+    "grid": [
+      "neutral", "neutral", "red", "blue", "red",
+      "red", "blue", "red", "red", "blue",
+      "neutral", "blue", "red", "neutral", "blue",
+      "red", "blue", "neutral", "red", "assassin",
+      "neutral", "red", "blue", "neutral", "blue"
+    ]
+  },
+  {
+    "id": 15,
+    "start": "blue",
+    "grid": [
+      "assassin", "neutral", "blue", "red", "blue",
+      "red", "red", "blue", "blue", "red",
+      "red", "blue", "blue", "neutral", "blue",
+      "blue", "blue", "neutral", "red", "neutral",
+      "red", "neutral", "red", "neutral", "neutral"
+    ]
+  },
+  {
+    "id": 16,
+    "start": "red",
+    "grid": [
+      "blue", "assassin", "red", "red", "red",
+      "blue", "red", "red", "red", "blue",
+      "blue", "blue", "neutral", "blue", "red",
+      "neutral", "neutral", "neutral", "neutral", "neutral",
+      "red", "neutral", "red", "blue", "blue"
+    ]
+  },
+  {
+    "id": 17,
+    "start": "blue",
+    "grid": [
+      "neutral", "red", "neutral", "blue", "blue",
+      "blue", "red", "neutral", "blue", "red",
+      "red", "red", "red", "red", "blue",
+      "assassin", "blue", "neutral", "red", "blue",
+      "blue", "neutral", "neutral", "blue", "neutral"
+    ]
+  },
+  {
+    "id": 18,
+    "start": "red",
+    "grid": [
+      "red", "neutral", "blue", "blue", "red",
+      "neutral", "blue", "blue", "blue", "neutral",
+      "red", "red", "red", "neutral", "assassin",
+      "blue", "blue", "red", "red", "neutral",
+      "blue", "neutral", "red", "neutral", "red"
+    ]
+  },
+  {
+    "id": 19,
+    "start": "blue",
+    "grid": [
+      "neutral", "blue", "blue", "blue", "blue",
+      "blue", "blue", "blue", "red", "blue",
+      "assassin", "red", "red", "neutral", "red",
+      "neutral", "red", "blue", "red", "neutral",
+      "red", "red", "neutral", "neutral", "neutral"
+    ]
+  },
+  {
+    "id": 20,
+    "start": "red",
+    "grid": [
+      "neutral", "red", "red", "blue", "blue",
+      "blue", "red", "blue", "red", "red",
+      "red", "neutral", "neutral", "red", "red",
+      "neutral", "neutral", "blue", "neutral", "neutral",
+      "blue", "blue", "assassin", "red", "blue"
+    ]
+  },
+  {
+    "id": 21,
+    "start": "blue",
+    "grid": [
+      "neutral", "red", "blue", "red", "neutral",
+      "blue", "blue", "blue", "red", "red",
+      "blue", "blue", "neutral", "red", "red",
+      "red", "blue", "assassin", "blue", "neutral",
+      "blue", "neutral", "red", "neutral", "neutral"
+    ]
+  },
+  {
+    "id": 22,
+    "start": "red",
+    "grid": [
+      "blue", "blue", "red", "neutral", "neutral",
+      "assassin", "neutral", "red", "red", "neutral",
+      "neutral", "red", "red", "neutral", "blue",
+      "blue", "blue", "blue", "red", "blue",
+      "blue", "neutral", "red", "red", "red"
+    ]
+  },
+  {
+    "id": 23,
+    "start": "blue",
+    "grid": [
+      "red", "assassin", "red", "blue", "blue",
+      "blue", "red", "neutral", "blue", "blue",
+      "neutral", "red", "red", "neutral", "neutral",
+      "blue", "neutral", "red", "red", "blue",
+      "neutral", "neutral", "red", "blue", "blue"
+    ]
+  },
+  {
+    "id": 24,
+    "start": "red",
+    "grid": [
+      "red", "neutral", "blue", "red", "red",
+      "red", "red", "red", "red", "blue",
+      "blue", "red", "blue", "blue", "neutral",
+      "assassin", "blue", "neutral", "neutral", "blue",
+      "neutral", "neutral", "neutral", "blue", "red"
+    ]
+  },
+  {
+    "id": 25,
+    "start": "blue",
+    "grid": [
+      "red", "neutral", "red", "red", "red",
+      "blue", "blue", "neutral", "blue", "blue",
+      "red", "blue", "blue", "neutral", "neutral",
+      "red", "blue", "blue", "neutral", "red",
+      "blue", "neutral", "assassin", "neutral", "red"
+    ]
+  },
+  {
+    "id": 26,
+    "start": "red",
+    "grid": [
+      "assassin", "blue", "neutral", "neutral", "blue",
+      "blue", "red", "neutral", "red", "neutral",
+      "blue", "red", "neutral", "red", "red",
+      "blue", "neutral", "red", "red", "blue",
+      "neutral", "blue", "red", "red", "blue"
+    ]
+  },
+  {
+    "id": 27,
+    "start": "blue",
+    "grid": [
+      "assassin", "neutral", "red", "blue", "neutral",
+      "blue", "blue", "neutral", "blue", "blue",
+      "red", "neutral", "red", "neutral", "blue",
+      "blue", "red", "blue", "red", "neutral",
+      "red", "blue", "red", "neutral", "red"
+    ]
+  },
+  {
+    "id": 28,
+    "start": "red",
+    "grid": [
+      "red", "red", "red", "neutral", "neutral",
+      "neutral", "red", "red", "blue", "blue",
+      "neutral", "blue", "blue", "red", "red",
+      "blue", "neutral", "red", "assassin", "blue",
+      "blue", "neutral", "red", "neutral", "blue"
+    ]
+  },
+  {
+    "id": 29,
+    "start": "blue",
+    "grid": [
+      "neutral", "red", "red", "blue", "red",
+      "blue", "red", "red", "blue", "neutral",
+      "blue", "assassin", "red", "neutral", "neutral",
+      "neutral", "blue", "red", "blue", "red",
+      "blue", "neutral", "neutral", "blue", "blue"
+    ]
+  },
+  {
+    "id": 30,
+    "start": "red",
+    "grid": [
+      "red", "blue", "red", "red", "neutral",
+      "neutral", "blue", "red", "neutral", "neutral",
+      "neutral", "red", "blue", "red", "red",
+      "neutral", "neutral", "red", "blue", "red",
+      "assassin", "blue", "blue", "blue", "blue"
+    ]
+  }
+]

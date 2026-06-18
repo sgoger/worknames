@@ -1,0 +1,5 @@
+# Outillage local (éditeur / preview) — hors livrable
+.claude/
+
+# OS
+.DS_Store

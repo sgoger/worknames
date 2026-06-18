@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>worknames — clés à imprimer</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <style>
+      /* Styles propres à la page d'impression des clés. */
+      body {
+        overflow: auto;
+      }
+      body::before {
+        display: none;
+      }
+      .keys-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: clamp(16px, 4vw, 40px);
+      }
+      .keys-header h1 {
+        margin: 0 0 0.2em;
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+      }
+      .keys-intro {
+        color: var(--muted);
+        max-width: 70ch;
+        line-height: 1.5;
+      }
+      .keys-warning {
+        margin: 16px 0;
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        border: 2px solid var(--red);
+        color: #f2828d;
+        font-weight: 700;
+        background: rgba(226, 60, 78, 0.08);
+      }
+      .keys-toolbar {
+        display: flex;
+        gap: 10px;
+        margin: 16px 0 28px;
+      }
+      .keys-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 22px;
+      }
+      .keyfig {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        background: #fff;
+        color: #111;
+        break-inside: avoid;
+      }
+      .keyfig-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      .keyfig-id {
+        font-weight: 900;
+        font-size: 1.1rem;
+        color: #111;
+      }
+      .keyfig-start {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .keyfig-start.blue {
+        color: var(--blue-strong);
+      }
+      .keyfig-start.red {
+        color: var(--red-strong);
+      }
+      .keyfig-up {
+        text-align: center;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.32em;
+        color: #555;
+        border-bottom: 2px solid #111;
+        padding-bottom: 3px;
+        margin-bottom: 6px;
+      }
+      .keyfig-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 3px;
+        aspect-ratio: 1 / 1;
+      }
+      .keyfig-cell {
+        position: relative;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        display: grid;
+        place-items: center;
+      }
+      .keyfig-cell span {
+        font-size: 0.55rem;
+        font-weight: 700;
+        opacity: 0.45;
+      }
+      .cell-blue {
+        background: var(--blue);
+      }
+      .cell-blue span {
+        color: #fff;
+      }
+      .cell-red {
+        background: var(--red);
+      }
+      .cell-red span {
+        color: #fff;
+      }
+      .cell-neutral {
+        background: var(--neutral);
+      }
+      .cell-neutral span {
+        color: var(--neutral-ink);
+      }
+      .cell-assassin {
+        background: #111;
+      }
+      .cell-assassin span {
+        color: #fff;
+        opacity: 0.85;
+      }
+      .keys-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 24px;
+        color: var(--muted);
+      }
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
+      .legend-swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.3);
+      }
+
+      /* ----- Impression ----- */
+      @media print {
+        :root {
+          /* couleurs vives à l'impression */
+          --blue: #2f74e0;
+          --red: #e23c4e;
+          --neutral: #d7c39a;
+        }
+        body {
+          background: #fff;
+          color: #000;
+        }
+        .keys-header,
+        .keys-toolbar,
+        .keys-legend {
+          display: none !important;
+        }
+        .keys-page {
+          padding: 0;
+          max-width: none;
+        }
+        .keys-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+        .keyfig {
+          border: 1px solid #999;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+        .keyfig-cell,
+        .cell-blue,
+        .cell-red,
+        .cell-neutral,
+        .cell-assassin {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        @page {
+          margin: 12mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="keys-page">
+      <header class="keys-header">
+        <h1 id="heading"></h1>
+        <p class="keys-intro" id="intro"></p>
+        <p class="keys-warning" id="warning"></p>
+        <div class="keys-toolbar">
+          <a class="btn" id="backLink" href="./index.html"></a>
+          <button type="button" class="btn btn-primary" id="printBtn"></button>
+        </div>
+      </header>
+
+      <div class="keys-grid" id="keysGrid"></div>
+
+      <div class="keys-legend" id="legend"></div>
+    </div>
+
+    <script type="module">
+      import { t, setLanguage } from "./js/i18n.js";
+      import { validateKey } from "./js/game.js";
+
+      setLanguage("fr");
+      document.title = t("keys.page.title");
+      document.getElementById("heading").textContent = t("keys.heading");
+      document.getElementById("intro").textContent = t("keys.intro");
+      document.getElementById("warning").textContent = t("keys.warning");
+      document.getElementById("backLink").textContent = t("keys.back");
+      document.getElementById("keysGrid").setAttribute("aria-label", t("keys.grid.aria"));
+      const printBtn = document.getElementById("printBtn");
+      printBtn.textContent = t("keys.print");
+      printBtn.addEventListener("click", () => window.print());
+
+      const COLOR_LABEL = {
+        blue: t("color.blue"),
+        red: t("color.red"),
+        neutral: t("color.neutral"),
+        assassin: t("color.assassin"),
+      };
+
+      function legend() {
+        const wrap = document.getElementById("legend");
+        for (const c of ["blue", "red", "neutral", "assassin"]) {
+          const item = document.createElement("span");
+          item.className = "legend-item";
+          const sw = document.createElement("span");
+          sw.className = "legend-swatch cell-" + c;
+          const label = document.createElement("span");
+          label.textContent = COLOR_LABEL[c];
+          item.append(sw, label);
+          wrap.appendChild(item);
+        }
+      }
+
+      function renderKey(key) {
+        const fig = document.createElement("figure");
+        fig.className = "keyfig";
+
+        const top = document.createElement("div");
+        top.className = "keyfig-top";
+        const id = document.createElement("span");
+        id.className = "keyfig-id";
+        id.textContent = t("key.label", { n: key.id });
+        const start = document.createElement("span");
+        start.className = "keyfig-start " + key.start;
+        start.textContent = t("keys.start", {
+          team: t(key.start === "blue" ? "team.blue" : "team.red"),
+        });
+        top.append(id, start);
+
+        const up = document.createElement("div");
+        up.className = "keyfig-up";
+        up.textContent = t("keys.up");
+
+        const grid = document.createElement("div");
+        grid.className = "keyfig-grid";
+        key.grid.forEach((color, idx) => {
+          const cell = document.createElement("div");
+          cell.className = "keyfig-cell cell-" + color;
+          const num = document.createElement("span");
+          num.textContent = String(idx + 1);
+          cell.appendChild(num);
+          grid.appendChild(cell);
+        });
+
+        fig.append(top, up, grid);
+        return fig;
+      }
+
+      try {
+        const res = await fetch("./data/keys.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const keys = await res.json();
+        const grid = document.getElementById("keysGrid");
+        for (const key of keys) {
+          const v = validateKey(key);
+          if (!v.ok) console.warn(`[worknames] Clé n°${key?.id} invalide :`, v.errors.join(" "));
+          grid.appendChild(renderKey(key));
+        }
+        legend();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("keysGrid").textContent = t("keys.load.error");
+      }
+    </script>
+  </body>
+</html>
