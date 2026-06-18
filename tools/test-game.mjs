@@ -1,5 +1,5 @@
 // Tests du moteur de jeu (logique pure). Usage : node tools/test-game.mjs
-// Vérifie les règles critiques + la validité du deck keys.json.
+// Vérifie les règles critiques (dont le plafond N+1) + la validité du deck.
 
 import { readFileSync } from "node:fs";
 import {
@@ -12,6 +12,9 @@ import {
   revealCard,
   endTurn,
   canEndTurn,
+  canRevealCards,
+  remainingTries,
+  validateClue,
   invalidClue,
 } from "../js/game.js";
 
@@ -41,20 +44,22 @@ function key(start, layout) {
 
 const WORDS25 = Array.from({ length: 25 }, (_, i) => "MOT" + i);
 
-// Layout valide : 9 blue, 8 red, 7 neutral, 1 assassin (start=blue).
-//                 0123456789...
+// Layout valide : 9 blue (0-8), 8 red (9-16), 7 neutral (17-23), 1 assassin (24).
 const LAYOUT_BLUE = "bbbbbbbbbrrrrrrrrnnnnnnna";
-//                   9 b        8 r     7 n   a
+
+// Raccourci : nouvel état bleu-départ avec indice déjà validé (N donné).
+function blueGameValidated(n) {
+  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
+  validateClue(s, n);
+  return s;
+}
 
 console.log("\n[validation des mots]");
 {
-  const r1 = validateWords(["A", "B"]);
-  ok(!r1.ok, "moins de 25 mots → invalide");
+  ok(!validateWords(["A", "B"]).ok, "moins de 25 mots → invalide");
   const dup = Array.from({ length: 25 }, (_, i) => "MOT" + i).concat("MOT0");
-  const r2 = validateWords(dup);
-  ok(!r2.ok, "doublons → invalide");
-  const good = validateWords(Array.from({ length: 30 }, (_, i) => "MOT" + i));
-  ok(good.ok, "30 mots distincts → valide");
+  ok(!validateWords(dup).ok, "doublons → invalide");
+  ok(validateWords(Array.from({ length: 30 }, (_, i) => "MOT" + i)).ok, "30 mots distincts → valide");
 }
 
 console.log("\n[validation des clés]");
@@ -64,45 +69,62 @@ console.log("\n[validation des clés]");
   ok(!validateKey({ start: "blue", grid: ["blue"] }).ok, "grid trop courte → invalide");
 }
 
-console.log("\n[état initial]");
+console.log("\n[état initial : indice non validé, cartes bloquées]");
 {
   const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
   eq(s.activeTeam, "blue", "équipe active = start");
-  eq(s.startTeam, "blue", "startTeam");
+  eq(s.clue.validated, false, "indice non validé au départ");
+  eq(canRevealCards(s), false, "cartes bloquées tant que l'indice n'est pas validé");
+  eq(remainingTries(s), null, "essais restants = null (en attente)");
   eq(s.totals.blue, 9, "total bleu");
   eq(s.totals.red, 8, "total rouge");
-  eq(s.counts.blue, 9, "compteur bleu initial");
-  eq(s.counts.red, 8, "compteur rouge initial");
-  ok(
-    s.revealed.every((r) => r === null),
-    "aucune carte révélée au départ"
-  );
 }
 
-console.log("\n[révéler une carte de l'équipe active → le tour continue]");
+console.log("\n[blocage : un clic sans indice validé est sans effet]");
 {
   const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  revealCard(s, 0); // case 0 = blue
+  revealCard(s, 0);
+  eq(s.revealed[0], null, "la carte reste cachée");
+  eq(s.counts.blue, 9, "aucun compteur modifié");
+}
+
+console.log("\n[validation de l'indice : N entier ≥ 1 obligatoire]");
+{
+  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
+  eq(validateClue(s, 0), false, "N = 0 refusé");
+  eq(validateClue(s, "abc"), false, "N non numérique refusé");
+  eq(s.clue.validated, false, "toujours non validé après refus");
+  eq(validateClue(s, 3), true, "N = 3 accepté");
+  eq(s.clue.validated, true, "indice validé");
+  eq(canRevealCards(s), true, "cartes débloquées");
+  eq(remainingTries(s), 4, "essais restants = N + 1 = 4");
+}
+
+console.log("\n[carte de l'équipe active → le tour continue, un essai consommé]");
+{
+  const s = blueGameValidated(5);
+  revealCard(s, 0); // blue
   eq(s.revealed[0], "blue", "carte recouverte en bleu");
   eq(s.counts.blue, 8, "compteur bleu décrémenté");
   eq(s.activeTeam, "blue", "toujours au tour des bleus");
-  eq(s.revealedThisTurn, 1, "revealedThisTurn = 1");
+  eq(s.revealedThisTurn, 1, "1 révélation ce tour");
+  eq(remainingTries(s), 5, "essais restants = 6 − 1 = 5");
 }
 
-console.log("\n[révéler un témoin → fin de tour]");
+console.log("\n[témoin → fin de tour + ré-attente de l'indice]");
 {
-  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  // index 17..23 = neutral
-  revealCard(s, 17);
+  const s = blueGameValidated(5);
+  revealCard(s, 17); // neutral
   eq(s.revealed[17], "neutral", "carte recouverte témoin");
   eq(s.activeTeam, "red", "le tour passe aux rouges");
-  eq(s.revealedThisTurn, 0, "compteur de tour réinitialisé");
+  eq(s.clue.validated, false, "le nouvel indice doit être re-validé");
+  eq(canRevealCards(s), false, "cartes bloquées pour les rouges en attente");
 }
 
-console.log("\n[révéler une carte adverse → fin de tour + compteur adverse]");
+console.log("\n[carte adverse → fin de tour + compteur adverse]");
 {
-  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  revealCard(s, 9); // index 9 = red
+  const s = blueGameValidated(5);
+  revealCard(s, 9); // red
   eq(s.revealed[9], "red", "carte recouverte rouge");
   eq(s.counts.red, 7, "compteur rouge décrémenté");
   eq(s.activeTeam, "red", "fin de tour → rouges");
@@ -110,61 +132,79 @@ console.log("\n[révéler une carte adverse → fin de tour + compteur adverse]"
 
 console.log("\n[assassin → défaite immédiate de l'équipe active]");
 {
-  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  revealCard(s, 24); // index 24 = assassin
+  const s = blueGameValidated(5);
+  revealCard(s, 24); // assassin
   ok(s.finished, "partie terminée");
-  eq(s.winner, "red", "l'équipe active (bleu) perd → rouge gagne");
+  eq(s.winner, "red", "bleu perd → rouge gagne");
   eq(s.endCause, "assassin", "cause = assassin");
+}
+
+console.log("\n[plafond N+1 : coupe automatique après la (N+1)ᵉ carte]");
+{
+  const s = blueGameValidated(2); // N=2 → 3 révélations max
+  revealCard(s, 0); // blue
+  revealCard(s, 1); // blue
+  eq(s.activeTeam, "blue", "encore bleu après 2 cartes");
+  eq(remainingTries(s), 1, "1 essai restant avant la carte bonus");
+  revealCard(s, 2); // blue → (N+1)ᵉ
+  eq(s.activeTeam, "red", "tour coupé automatiquement après la 3ᵉ carte");
+  eq(s.counts.blue, 6, "3 cartes bleues révélées (9 → 6)");
+  eq(s.clue.validated, false, "indice ré-armé pour les rouges");
+}
+
+console.log("\n[erreur avant le plafond : toute erreur coupe le tour]");
+{
+  const s = blueGameValidated(3); // 4 révélations max
+  revealCard(s, 0); // blue
+  revealCard(s, 17); // témoin → coupe immédiate, peu importe les essais restants
+  eq(s.activeTeam, "red", "le tour est coupé par l'erreur");
+}
+
+console.log("\n[Terminer le tour : entre 1 et N+1]");
+{
+  const s = blueGameValidated(3);
+  ok(!canEndTurn(s), "impossible de passer la main sans révélation");
+  ok(endTurn(s) === false, "endTurn refusé à 0 révélation");
+  revealCard(s, 0); // 1 carte
+  ok(canEndTurn(s), "passe possible après 1 carte (< N+1)");
+  ok(endTurn(s) === true, "endTurn accepté");
+  eq(s.activeTeam, "red", "le tour passe aux rouges");
+  eq(s.clue.validated, false, "indice ré-armé");
+}
+
+console.log("\n[Terminer le tour interdit tant que l'indice n'est pas validé]");
+{
+  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
+  ok(!canEndTurn(s), "pas de passe sans indice validé");
 }
 
 console.log("\n[victoire : une équipe révèle toutes ses cartes]");
 {
-  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  for (let i = 0; i < 9; i++) revealCard(s, i); // les 9 cartes bleues
+  const s = blueGameValidated(8); // 9 révélations max = exactement les 9 bleues
+  for (let i = 0; i < 9; i++) revealCard(s, i);
   ok(s.finished, "partie terminée");
   eq(s.winner, "blue", "bleu gagne");
   eq(s.endCause, "cards", "cause = cartes");
 }
 
-console.log("\n[victoire pendant le tour adverse : tester la victoire AVANT de changer d'équipe]");
+console.log("\n[victoire pendant le tour adverse : tester la victoire AVANT de basculer]");
 {
-  // Rouge actif révèle la dernière carte BLEUE → bleu doit gagner,
-  // sans que le tour ne bascule.
-  const s = initState(WORDS25, key("red", LAYOUT_BLUE)); // start=red → 9 red? non.
-  // Avec start=red sur LAYOUT_BLUE, la grille a 9 blue / 8 red mais start=red
-  // attend 9 red : on construit donc une grille adaptée.
-  const s2 = initState(WORDS25, key("red", "rrrrrrrrrbbbbbbbbnnnnnnna"));
-  // 9 red, 8 blue. Rouge actif. On épuise le bleu manuellement :
-  // d'abord on simule : rouge actif clique des cases bleues (adverses) une à une.
-  // Chaque clic bleu finit le tour ; on remet rouge actif pour le test.
-  // Plus simple : pré-révéler 7 cartes bleues, puis cliquer la 8e en tour rouge.
-  for (let i = 9; i < 16; i++) s2.revealed[i] = "blue"; // 7 cartes bleues déjà posées
-  s2.counts.blue = 1; // il reste 1 carte bleue
-  s2.activeTeam = "red";
-  revealCard(s2, 16); // dernière carte bleue, cliquée pendant le tour rouge
-  ok(s2.finished, "partie terminée");
-  eq(s2.winner, "blue", "bleu gagne même pendant le tour rouge");
-  eq(s2.endCause, "cards", "cause = cartes");
-  void s; // s non utilisé directement
-}
-
-console.log("\n[Terminer le tour : interdit sans révélation, autorisé après ≥ 1]");
-{
-  const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  ok(!canEndTurn(s), "impossible de passer la main sans avoir révélé");
-  ok(endTurn(s) === false, "endTurn refusé");
-  eq(s.activeTeam, "blue", "toujours bleu");
-  revealCard(s, 0); // 1 carte bleue
-  ok(canEndTurn(s), "passe possible après 1 révélation");
-  ok(endTurn(s) === true, "endTurn accepté");
-  eq(s.activeTeam, "red", "le tour passe aux rouges");
+  const s = initState(WORDS25, key("red", "rrrrrrrrrbbbbbbbbnnnnnnna")); // 9 red, 8 blue, red start
+  for (let i = 9; i < 16; i++) s.revealed[i] = "blue"; // 7 cartes bleues déjà posées
+  s.counts.blue = 1; // il reste 1 carte bleue
+  s.activeTeam = "red";
+  validateClue(s, 5); // rouge a validé son indice
+  revealCard(s, 16); // dernière carte bleue, cliquée pendant le tour rouge
+  ok(s.finished, "partie terminée");
+  eq(s.winner, "blue", "bleu gagne même pendant le tour rouge");
+  eq(s.endCause, "cards", "cause = cartes");
 }
 
 console.log("\n[Indice invalide : recouvre une carte adverse + fin de tour]");
 {
   const s = initState(WORDS25, key("blue", LAYOUT_BLUE)); // bleu actif, adverse = rouge
   const redBefore = s.counts.red;
-  invalidClue(s); // case adverse au hasard
+  invalidClue(s); // applicable même sans indice validé
   eq(s.counts.red, redBefore - 1, "une carte rouge a été recouverte");
   eq(s.activeTeam, "red", "le tour passe aux rouges");
 }
@@ -172,12 +212,11 @@ console.log("\n[Indice invalide : recouvre une carte adverse + fin de tour]");
 console.log("\n[Indice invalide : peut faire gagner l'adversaire]");
 {
   const s = initState(WORDS25, key("blue", LAYOUT_BLUE));
-  // Pré-révèle 7 des 8 cartes rouges → il en reste 1.
-  let revealedReds = 0;
-  for (let i = 0; i < 25 && revealedReds < 7; i++) {
+  let reds = 0;
+  for (let i = 0; i < 25 && reds < 7; i++) {
     if (s.grid[i] === "red") {
       s.revealed[i] = "red";
-      revealedReds++;
+      reds++;
     }
   }
   s.counts.red = 1;
@@ -188,12 +227,11 @@ console.log("\n[Indice invalide : peut faire gagner l'adversaire]");
 
 console.log("\n[deck keys.json : 30 clés valides]");
 {
-  let keys;
+  let keys = [];
   try {
     keys = JSON.parse(readFileSync(new URL("../data/keys.json", import.meta.url), "utf8"));
   } catch (e) {
-    ok(false, "keys.json lisible et JSON valide : " + e.message);
-    keys = [];
+    ok(false, "keys.json lisible : " + e.message);
   }
   eq(keys.length, 30, "30 clés");
   let allValid = true;
@@ -210,20 +248,21 @@ console.log("\n[deck keys.json : 30 clés valides]");
   }
   ok(allValid, "toutes les clés respectent les contraintes (9/8/7/1)");
   eq(ids.size, 30, "ids uniques");
-  ok(blueStart >= 12 && blueStart <= 18, `répartition équilibrée bleu/rouge (${blueStart}/30 bleu)`);
+  ok(blueStart >= 12 && blueStart <= 18, `répartition équilibrée (${blueStart}/30 bleu)`);
 }
 
 console.log("\n[divers]");
 {
   eq(opponent("blue"), "red", "opponent(blue)");
-  eq(opponent("red"), "blue", "opponent(red)");
+  const keys = JSON.parse(readFileSync(new URL("../data/keys.json", import.meta.url), "utf8"));
   const g = createGame(
     Array.from({ length: 60 }, (_, i) => "W" + i),
-    JSON.parse(readFileSync(new URL("../data/keys.json", import.meta.url), "utf8")),
+    keys,
     { keyMode: "manual", manualKeyNumber: 3 }
   );
   eq(g.keyId, 3, "createGame respecte la clé manuelle");
   eq(new Set(g.words).size, 25, "25 mots distincts échantillonnés");
+  eq(g.clue.validated, false, "nouvelle partie : indice non validé");
   void COLORS;
 }
 

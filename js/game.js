@@ -117,8 +117,10 @@ export function initState(words, key) {
     activeTeam: key.start,
     totals, // totaux de départ (pour affichage 9/8)
     counts: { blue: totals.blue, red: totals.red }, // restants
-    revealedThisTurn: 0,
-    clue: { word: "", number: "" },
+    revealedThisTurn: 0, // révélations de la couleur active faites ce tour
+    // Indice du tour : N (number) est obligatoire et fonctionnel (plafond N+1) ;
+    // word est optionnel/décoratif. validated débloque les cartes.
+    clue: { word: "", number: null, validated: false },
     finished: false,
     winner: null,
     endCause: null, // "cards" | "assassin"
@@ -137,6 +139,8 @@ export function createGame(words, keys, { keyMode = "random", manualKeyNumber = 
 function switchTeam(state) {
   state.activeTeam = opponent(state.activeTeam);
   state.revealedThisTurn = 0;
+  // Nouveau tour → l'indice doit être re-saisi et validé (cartes bloquées).
+  state.clue = { word: "", number: null, validated: false };
 }
 
 // Bas niveau : recouvre la carte i, décrémente le compteur concerné,
@@ -172,9 +176,21 @@ function coverAndTest(state, i) {
   return color;
 }
 
+// Les cartes ne sont cliquables que si l'indice du tour est validé.
+export function canRevealCards(state) {
+  return !state.finished && state.clue.validated === true;
+}
+
+// Essais restants ce tour = N + 1 − révélations déjà faites.
+// Renvoie null tant que l'indice n'est pas validé (afficher « en attente »).
+export function remainingTries(state) {
+  if (!state.clue.validated || !Number.isInteger(state.clue.number)) return null;
+  return state.clue.number + 1 - state.revealedThisTurn;
+}
+
 // Un Agent clique sur une carte.
 export function revealCard(state, i) {
-  if (state.finished) return state;
+  if (!canRevealCards(state)) return state; // bloqué tant que l'indice n'est pas validé
   if (i < 0 || i >= GRID_SIZE) return state;
   if (state.revealed[i] !== null) return state; // déjà révélée
 
@@ -184,15 +200,21 @@ export function revealCard(state, i) {
   if (color === state.activeTeam) {
     // couleur de l'équipe active → le tour continue
     state.revealedThisTurn++;
+    // Plafond N+1 : après la (N+1)ᵉ révélation, le tour se termine automatiquement.
+    if (state.revealedThisTurn >= state.clue.number + 1) {
+      switchTeam(state);
+    }
   } else {
-    // couleur adverse ou témoin → fin de tour immédiate
+    // couleur adverse ou témoin → fin de tour immédiate (toute erreur coupe avant)
     switchTeam(state);
   }
   return state;
 }
 
 export function canEndTurn(state) {
-  return !state.finished && state.revealedThisTurn >= 1;
+  // Passe la main volontairement : indice validé + au moins une carte révélée
+  // (l'équipe peut donc s'arrêter entre 1 et N+1 révélations).
+  return !state.finished && state.clue.validated && state.revealedThisTurn >= 1;
 }
 
 // L'équipe active passe la main volontairement (≥ 1 carte révélée requise).
@@ -237,7 +259,23 @@ export function invalidClue(state, index = null) {
   return state;
 }
 
-export function setClue(state, word, number) {
-  state.clue = { word: word ?? "", number: number ?? "" };
+// Met à jour l'indice en cours de saisie (sans valider). `number` peut être
+// une chaîne (saisie brute) : on tente de la convertir en entier ≥ 1, sinon null.
+export function setClue(state, { word, number } = {}) {
+  if (word !== undefined) state.clue.word = word ?? "";
+  if (number !== undefined) {
+    const n = parseInt(number, 10);
+    state.clue.number = Number.isInteger(n) && n >= 1 ? n : null;
+  }
   return state;
+}
+
+// Valide l'indice du tour : fixe N et débloque les cartes.
+// Retourne true si N est un entier ≥ 1 (sinon n'a aucun effet).
+export function validateClue(state, number) {
+  if (state.finished) return false;
+  if (number !== undefined) setClue(state, { number });
+  if (!Number.isInteger(state.clue.number) || state.clue.number < 1) return false;
+  state.clue.validated = true;
+  return true;
 }

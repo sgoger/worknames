@@ -159,17 +159,93 @@ body[data-active="red"] .turn-indicator {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* ---------- Barre d'indice ---------- */
-.clue-bar {
-  justify-self: center;
+/* ---------- Barre de statut : indice + essais restants ---------- */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(10px, 2vw, 28px);
+  flex-wrap: wrap;
+}
+.clue-input {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  padding: 0.4em 0.6em;
+  padding: 0.4em 0.6em 0.4em 0.2em;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 999px;
 }
+.clue-input #validateClueBtn {
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
+  padding: 0.5em 1.1em;
+}
+.clue-word:disabled,
+.clue-number:disabled {
+  opacity: 0.85;
+  -webkit-text-fill-color: currentColor; /* garde le texte net une fois verrouillé */
+}
+.clue-number.invalid {
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+}
+
+/* Essais restants */
+.tries {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55em;
+  padding: 0.3em 1.1em;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  white-space: nowrap;
+}
+.tries-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: clamp(0.7rem, 1.1vw, 1rem);
+  color: var(--muted);
+}
+.tries-value {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.6rem, 3.4vw, 3rem);
+  line-height: 1;
+}
+/* État « en attente de l'indice » : le message devient l'élément dominant */
+.tries[data-state="waiting"] {
+  border-color: #d8a23a;
+  background: rgba(216, 162, 58, 0.12);
+}
+.tries[data-state="waiting"] .tries-label {
+  display: none;
+}
+.tries[data-state="waiting"] .tries-value {
+  font-size: clamp(0.95rem, 1.8vw, 1.5rem);
+  font-weight: 800;
+  color: #f0c060;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.tries[data-state="active"] .tries-value {
+  color: #fff;
+}
+.tries[data-state="finished"] {
+  opacity: 0.4;
+}
+
+/* Grille verrouillée tant que l'indice n'est pas validé */
+.board.locked .card:not(.revealed) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.board.locked .card:not(.revealed):hover {
+  transform: none;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
 .clue-tag {
   font-weight: 700;
   color: var(--muted);

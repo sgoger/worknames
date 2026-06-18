@@ -23,6 +23,13 @@ function isValidGame(game) {
   if (!game.counts || typeof game.counts.blue !== "number" || typeof game.counts.red !== "number") {
     return false;
   }
+  if (typeof game.revealedThisTurn !== "number") return false;
+  // Indice du tour (schéma N+1) : valide aussi le rejet des anciens états.
+  const c = game.clue;
+  if (!c || typeof c !== "object") return false;
+  if (typeof c.validated !== "boolean") return false;
+  if (c.number !== null && !Number.isInteger(c.number)) return false;
+  if (typeof c.word !== "string") return false;
   return true;
 }
 

@@ -30,8 +30,14 @@ const fr = {
   "clue.title": "Indice",
   "clue.word.placeholder": "Mot",
   "clue.number.placeholder": "Chiffre",
-  "clue.word.aria": "Mot d'indice annoncé oralement",
-  "clue.number.aria": "Chiffre de l'indice annoncé oralement",
+  "clue.word.aria": "Mot d'indice (optionnel)",
+  "clue.number.aria": "Chiffre de l'indice (obligatoire)",
+  "clue.validate": "Valider l'indice",
+
+  // Essais restants / attente
+  "tries.label": "Essais restants",
+  "tries.waiting": "En attente de l'indice",
+  "tries.none": "—",
 
   // Compteurs
   "counts.aria": "Cartes restantes par équipe",

@@ -21,10 +21,14 @@ const el = {
   turnText: $("turnText"),
   keyLabel: $("keyLabel"),
   keyBadge: $("keyBadge"),
-  clueBar: $("clueBar"),
+  clueInput: $("clueInput"),
   clueTag: $("clueTag"),
   clueWord: $("clueWord"),
   clueNumber: $("clueNumber"),
+  validateClueBtn: $("validateClueBtn"),
+  tries: $("tries"),
+  triesLabel: $("triesLabel"),
+  triesValue: $("triesValue"),
   board: $("board"),
   scoreBlueLabel: $("scoreBlueLabel"),
   scoreBlueValue: $("scoreBlueValue"),
@@ -118,6 +122,7 @@ async function init() {
 
   el.app.hidden = false;
   render();
+  focusClueEntry();
 }
 
 async function fetchJSON(path) {
@@ -147,12 +152,14 @@ function applyStaticLabels() {
   el.appTitle.textContent = t("app.title");
   el.appTagline.textContent = t("app.tagline");
   el.board.setAttribute("aria-label", t("board.aria"));
-  el.clueBar.setAttribute("aria-label", t("clue.section.aria"));
+  el.clueInput.setAttribute("aria-label", t("clue.section.aria"));
   el.clueTag.textContent = t("clue.title");
   el.clueWord.placeholder = t("clue.word.placeholder");
   el.clueNumber.placeholder = t("clue.number.placeholder");
   el.clueWord.setAttribute("aria-label", t("clue.word.aria"));
   el.clueNumber.setAttribute("aria-label", t("clue.number.aria"));
+  el.validateClueBtn.textContent = t("clue.validate");
+  el.triesLabel.textContent = t("tries.label");
   el.scoreBlueLabel.textContent = t("team.blue.short");
   el.scoreRedLabel.textContent = t("team.red.short");
   el.endTurnBtn.textContent = t("btn.endTurn");
@@ -199,6 +206,8 @@ function render() {
 }
 
 function renderBoard() {
+  const canReveal = game.canRevealCards(state);
+  el.board.classList.toggle("locked", !canReveal);
   for (let i = 0; i < GRID_SIZE; i++) {
     const btn = cardEls[i];
     const word = state.words[i];
@@ -213,7 +222,8 @@ function renderBoard() {
         t("card.aria.revealed", { word, color: t("color." + revealedColor) })
       );
     } else {
-      btn.disabled = state.finished;
+      // Bloqué tant que l'indice n'est pas validé.
+      btn.disabled = !canReveal;
       btn.setAttribute("aria-label", t("card.aria.hidden", { word }));
     }
   }
@@ -238,14 +248,35 @@ function renderStatus() {
     total: state.totals.red,
   });
 
+  // Essais restants / état « en attente de l'indice »
+  const waiting = !state.finished && !state.clue.validated;
+  const triesState = state.finished ? "finished" : waiting ? "waiting" : "active";
+  el.tries.dataset.state = triesState;
+  if (waiting) {
+    el.triesValue.textContent = t("tries.waiting");
+  } else if (state.finished) {
+    el.triesValue.textContent = t("tries.none");
+  } else {
+    el.triesValue.textContent = String(game.remainingTries(state));
+  }
+
   el.endTurnBtn.disabled = !game.canEndTurn(state);
   el.invalidClueBtn.disabled = state.finished;
   el.timerBtn.disabled = state.finished && timerId === null ? true : false;
 }
 
 function renderClue() {
+  const editable = !state.clue.validated && !state.finished;
   if (document.activeElement !== el.clueWord) el.clueWord.value = state.clue.word || "";
-  if (document.activeElement !== el.clueNumber) el.clueNumber.value = state.clue.number || "";
+  if (document.activeElement !== el.clueNumber) {
+    el.clueNumber.value = state.clue.number == null ? "" : String(state.clue.number);
+  }
+  // Une fois l'indice validé (ou partie finie), on verrouille la saisie :
+  // le mot + N restent affichés à la salle, sans pouvoir être modifiés.
+  el.clueWord.disabled = !editable;
+  el.clueNumber.disabled = !editable;
+  el.validateClueBtn.disabled = !editable;
+  if (editable) el.clueNumber.classList.remove("invalid");
 }
 
 function renderEnd() {
@@ -264,20 +295,28 @@ function renderEnd() {
 }
 
 // --- Actions de jeu --------------------------------------------------------
+// Place le curseur dans le champ « mot » au début d'un tour en attente d'indice.
+function focusClueEntry() {
+  if (!state.finished && !state.clue.validated) el.clueWord.focus();
+}
+
 function onCardClick(i) {
-  if (state.finished || state.revealed[i] !== null) return;
+  if (!game.canRevealCards(state) || state.revealed[i] !== null) return;
+  const prevTeam = state.activeTeam;
   game.revealCard(state, i);
   stopTimerIfTurnChanged();
   persist();
   render();
+  if (state.activeTeam !== prevTeam) focusClueEntry(); // tour basculé → saisie suivante
 }
 
 function onEndTurn() {
   if (!game.canEndTurn(state)) return;
-  game.endTurn(state);
+  game.endTurn(state); // remet l'indice à zéro → champs vidés au prochain render
   stopTimer();
   persist();
   render();
+  focusClueEntry();
 }
 
 function onInvalidClue() {
@@ -287,6 +326,7 @@ function onInvalidClue() {
   stopTimer();
   persist();
   render();
+  focusClueEntry();
 }
 
 function onReplay() {
@@ -297,11 +337,35 @@ function onReplay() {
   state = freshGame();
   persist();
   render();
+  focusClueEntry();
 }
 
-function onClueInput() {
-  game.setClue(state, el.clueWord.value, el.clueNumber.value);
+function onClueWordInput() {
+  game.setClue(state, { word: el.clueWord.value });
   persist();
+}
+
+function onClueNumberInput() {
+  game.setClue(state, { number: el.clueNumber.value });
+  el.clueNumber.classList.remove("invalid");
+  persist();
+  // Met à jour les essais restants prévisionnels sans toucher au focus.
+}
+
+// Valider l'indice : fixe N, débloque les cartes et lance le sablier
+// (que ce soit via le bouton ou la touche Entrée dans le champ chiffre).
+function onValidateClue() {
+  if (state.finished || state.clue.validated) return;
+  game.setClue(state, { word: el.clueWord.value, number: el.clueNumber.value });
+  if (!game.validateClue(state)) {
+    // N manquant ou invalide : feedback visuel, on garde le focus sur le chiffre.
+    el.clueNumber.classList.add("invalid");
+    el.clueNumber.focus();
+    return;
+  }
+  persist();
+  render();
+  startTimer();
 }
 
 // --- Sablier ---------------------------------------------------------------
@@ -425,8 +489,25 @@ function wireEvents() {
   el.settingsForm.addEventListener("submit", onSettingsSubmit);
   el.keyModeRandom.addEventListener("change", syncKeyModeUI);
   el.keyModeManual.addEventListener("change", syncKeyModeUI);
-  el.clueWord.addEventListener("input", onClueInput);
-  el.clueNumber.addEventListener("input", onClueInput);
+  el.clueWord.addEventListener("input", onClueWordInput);
+  el.clueNumber.addEventListener("input", onClueNumberInput);
+  el.validateClueBtn.addEventListener("click", onValidateClue);
+
+  // Entrée dans le mot → le curseur passe au champ chiffre.
+  el.clueWord.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      el.clueNumber.focus();
+      el.clueNumber.select();
+    }
+  });
+  // Entrée dans le chiffre → valide l'indice (et lance le sablier).
+  el.clueNumber.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onValidateClue();
+    }
+  });
 
   // libellé initial du bouton sablier
   el.timerBtn.textContent = t("btn.startTimer");

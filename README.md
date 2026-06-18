@@ -101,10 +101,14 @@ node tools/test-game.mjs
   - **Couleur adverse** ou **témoin** → carte recouverte, fin du tour.
   - **Assassin** → l'équipe active **perd** immédiatement.
 - Ordre d'évaluation après chaque clic : **recouvrir → décrémenter → tester la victoire → (sinon) changer d'équipe**. Toucher la dernière carte adverse fait donc gagner l'adversaire, même pendant votre tour.
-- **Aucun plafond de coups** : on révèle autant de cartes que voulu jusqu'à une erreur ou « Terminer le tour ». Le chiffre de l'indice n'est jamais utilisé comme contrainte.
-- **Terminer le tour** : passe la main (autorisé après au moins une carte révélée).
+- **Indice obligatoire et plafond N + 1** : à chaque tour, l'animateur saisit le **chiffre N** (le mot reste optionnel/décoratif) puis clique sur **« Valider l'indice »**. Tant que l'indice n'est pas validé, **les cartes sont bloquées** (« En attente de l'indice »). Une fois validé, l'équipe dispose de **N + 1 révélations maximum** ; le nombre d'**essais restants** est affiché en grand. Le tour **se coupe automatiquement** après la (N+1)ᵉ carte, et **toute erreur** (couleur adverse / témoin / assassin) coupe le tour avant. L'indice est ré-armé à chaque nouveau tour.
+- **Terminer le tour** : passe la main (autorisé après au moins une carte révélée) — l'équipe peut donc s'arrêter entre **1 et N + 1** révélations. Vide aussi les champs de l'indice.
 - **Fin de partie** : une équipe a révélé toutes ses cartes → elle gagne ; ou l'assassin est révélé → l'équipe active perd.
 - **Indice invalide** (optionnel) : termine le tour et recouvre une carte adverse, avec mise à jour du compteur et test de victoire.
+
+### Flux de saisie de l'indice (pratique en projection)
+
+Le champ **mot** (optionnel) → **Entrée** place le curseur dans le champ **chiffre** → saisie de N → **Entrée** (ou le bouton « Valider l'indice ») valide l'indice, débloque les cartes **et lance le sablier**.
 
 Le sablier (durée configurable, son off par défaut) est une aide visuelle : il n'a **aucun effet mécanique** sur le jeu.
 

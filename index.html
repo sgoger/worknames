@@ -32,22 +32,29 @@
         </div>
       </header>
 
-      <section class="clue-bar" id="clueBar">
-        <span class="clue-tag" id="clueTag"></span>
-        <input
-          type="text"
-          id="clueWord"
-          class="clue-word"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <input
-          type="text"
-          id="clueNumber"
-          class="clue-number"
-          inputmode="numeric"
-          autocomplete="off"
-        />
+      <section class="status-bar" id="statusBar">
+        <div class="clue-input" id="clueInput">
+          <span class="clue-tag" id="clueTag"></span>
+          <input
+            type="text"
+            id="clueWord"
+            class="clue-word"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <input
+            type="text"
+            id="clueNumber"
+            class="clue-number"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+          <button type="button" class="btn btn-primary" id="validateClueBtn"></button>
+        </div>
+        <div class="tries" id="tries" data-state="waiting">
+          <span class="tries-label" id="triesLabel"></span>
+          <span class="tries-value" id="triesValue"></span>
+        </div>
       </section>
 
       <main class="board-wrap">
